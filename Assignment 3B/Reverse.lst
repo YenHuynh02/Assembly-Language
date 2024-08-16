@@ -1,0 +1,65 @@
+
+as12, an absolute assembler for Motorola MCU's, version 1.2h
+
+                        ; Reverse.asm
+                        
+                        ; Modified by:          Yen Huynh
+                        ; Student Number(s):    041068712
+                        ; Course:               CST8216 Winter 2021
+                        ; Date:                 July 30th, 2023
+                        ;
+                        ; Purpose       To copy and reverse and array, while performing the following
+                        ;               additional operations to decrypt the Secret Message. After
+                        ;               reading in a value, we decrypt the value by
+                        ;                a. dividing the value by 3
+                        ;               b. then adding 32 to the value
+                        ;               c. storing the value
+                        
+                        ; Decryption Constants
+0003                    DIVISOR         equ     3       ; Value in supplied array will be divided by
+                                                        ; this value
+0020                    ADDED_VALUE     equ     32      ; Divided value will have 32 added to it
+                        
+1000                                    org     $1000
+1000                    Source_Array
+                        #include A3B_Array.txt
+1000 8a 9f 72 00 99 7b  	db	$8A,$9F,$72,$0,$99,$7B,$0,$AB,$63,$96,$96,$63,$0,$0
+     00 ab 63 96 96 63
+     00 00
+100e 00 00 8a 63 00 75  	db	$0,$0,$8A,$63,$0,$75,$8A,$7B,$99,$96,$6F,$A2,$6F,$96
+     8a 7b 99 96 6f a2
+     6f 96
+                        
+                        
+                        	
+                        
+                        #endinclude
+
+101c                    End_Source_Array
+1020                                    org        $1020                        ; Secret Message will appear
+                                                                                ; starting here
+1020                    Destination_Array
+1020                                    ds      End_Source_Array-Source_Array   ; auto calculate Array Size
+103c                    End_Destination_Array
+                        
+2000                                    org     $2000
+2000 cf 20 00                           lds     #$2000                  ; Initialize Stack
+                                        
+2003 ce 10 00                           ldx    #Source_Array            ; Point to Start of the Source Array
+2006 cd 10 3c                           ldy    #End_Destination_Array   ; Point to End Destination Array
+                                        
+2009 d6 01              Restart         ldab   1, x+                    ; Read value from source array
+200b 34                                 pshx                            ; Push stack
+200c ce 00 03                           ldx    #DIVISOR                 ; Load value will be divided
+200f 18 10                              idiv                            ; D divided by X
+2011 b7 d1                              exg    x,b                      ; Exchange value
+2013 cb 20                              addb   #ADDED_VALUE             ; Add 32 to the value
+2015 30                                 pulx                            ; Pull stack
+2016 6b 7f                              stab   1,y-                     ; Store value in destination array
+2018 8e 10 1c                           cpx    #End_Source_Array        ; Compare if it equal
+201b 26 ec                              bne    #Restart                 ; No, restart
+                                        end                             ; Yes, end
+
+Executed: Sun Jul 30 23:22:41 2023
+Total cycles: 37, Total bytes: 57
+Total errors: 0, Total warnings: 0
